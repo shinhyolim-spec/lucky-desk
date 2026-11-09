@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>럭키데스크 사주책상</title>
+  <meta name="description" content="직장인을 위한 오늘의 운세. 만세력 기반 일진 해석, 행운의 색·문구류, 부적 긁기와 문구류 블록 맞추기.">
+  <meta name="theme-color" content="#8a4b2a">
+  <meta property="og:title" content="럭키데스크 사주책상">
+  <meta property="og:description" content="출근길 1분, 오늘의 운세 점수와 행운의 문구류를 확인해 보세요.">
+  <meta property="og:type" content="website">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="사주책상">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="desk">
+    <header class="topbar">
+      <div class="brand">
+        <span class="seal" aria-hidden="true">福</span>
+        <div>
+          <div class="brand-name">럭키데스크</div>
+          <div class="brand-sub">사주책상</div>
+        </div>
+      </div>
+      <div class="topbar-date" id="topDate"></div>
+    </header>
+
+    <main id="app">
+      <!-- 첫 실행: 정보 입력 -->
+      <section class="view" id="view-setup" hidden>
+        <div class="paper intro">
+          <p class="eyebrow">처음 한 번만</p>
+          <h1>생년월일을 알려 주세요</h1>
+          <p class="muted">입력한 정보는 <b>이 휴대폰(브라우저)에만</b> 저장돼요. 서버로 보내지 않아요.</p>
+          <form id="setupForm" class="form" autocomplete="off">
+            <label class="field">
+              <span>부를 이름 <small>(선택)</small></span>
+              <input type="text" name="nick" maxlength="12" placeholder="예: 김대리">
+            </label>
+            <label class="field">
+              <span>생년월일 <small>(양력)</small></span>
+              <input type="date" name="birth" required min="1920-01-01" max="2015-12-31">
+            </label>
+            <label class="field">
+              <span>태어난 시간</span>
+              <input type="time" name="time">
+            </label>
+            <label class="check">
+              <input type="checkbox" name="noTime"> 태어난 시간을 몰라요
+            </label>
+            <p class="hint">음력 생일만 아신다면 양력으로 바꿔서 입력해 주세요. 시간을 모르면 시주 없이 계산해요.</p>
+            <button class="btn primary big" type="submit">오늘의 운세 보기</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- 오늘의 운세 -->
+      <section class="view" id="view-today" hidden>
+        <div class="paper score-card">
+          <p class="greet" id="greet"></p>
+          <div class="score-wrap">
+            <svg class="gauge" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="gauge-bg" cx="60" cy="60" r="52"/>
+              <circle class="gauge-fg" id="gaugeFg" cx="60" cy="60" r="52"/>
+            </svg>
+            <div class="score-num"><span id="scoreNum">0</span><small>점</small></div>
+          </div>
+          <h1 class="score-title" id="scoreTitle"></h1>
+          <p class="score-band" id="scoreBand"></p>
+          <div class="iljin" id="iljin"></div>
+        </div>
+
+        <div class="paper reading">
+          <h2>오늘의 해석</h2>
+          <p class="headline" id="headline"></p>
+          <p class="summary" id="summary"></p>
+          <ul class="relations" id="relations"></ul>
+          <p class="strength" id="strengthLine"></p>
+        </div>
+
+        <div class="paper">
+          <h2>분야별 기운</h2>
+          <div class="subs" id="subs"></div>
+        </div>
+
+        <div class="paper">
+          <h2>오늘의 행운</h2>
+          <div class="lucky" id="lucky"></div>
+        </div>
+
+        <div class="paper">
+          <h2>책상 위 한 줄 팁</h2>
+          <ul class="tips" id="tips"></ul>
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="shareBtn" type="button">동료에게 링크 공유</button>
+        </div>
+        <p class="footnote">사주 해석은 재미와 참고용이에요. 오늘 하루도 당신이 주인공!</p>
+      </section>
+
+      <!-- 부적 긁기 -->
+      <section class="view" id="view-talisman" hidden>
+        <div class="paper center">
+          <h2>부적 긁기</h2>
+          <p class="muted">손가락으로 부적을 문질러 오늘의 한마디를 받아 보세요.</p>
+          <div class="talisman" id="talisman">
+            <div class="talisman-msg" id="talismanMsg">
+              <span class="talisman-stamp">今日</span>
+              <p id="talismanLine"></p>
+            </div>
+            <canvas class="talisman-cover" id="talismanCanvas" aria-label="문질러서 긁는 부적"></canvas>
+          </div>
+          <div class="actions">
+            <button class="btn" id="talismanAgain" type="button" hidden>부적 한 장 더</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 블록 맞추기 -->
+      <section class="view" id="view-match" hidden>
+        <div class="paper match-head">
+          <div class="match-stats">
+            <div><small>점수</small><b id="m3Score">0</b></div>
+            <div><small>최고</small><b id="m3Best">0</b></div>
+            <div><small>행운 블록</small><b id="m3Lucky">0</b></div>
+          </div>
+          <p class="muted small" id="m3Guide"></p>
+        </div>
+        <div class="board-wrap">
+          <div class="board" id="board" role="grid" aria-label="문구류 블록 맞추기 판"></div>
+          <div class="board-toast" id="boardToast" aria-live="polite"></div>
+        </div>
+        <div class="actions row">
+          <button class="btn" id="m3Hint" type="button">힌트</button>
+          <button class="btn" id="m3New" type="button">새 판</button>
+        </div>
+        <p class="footnote">시간 제한 없어요. 같은 문구류 3개 이상을 가로·세로로 맞추세요.</p>
+      </section>
+
+      <!-- 내 사주 -->
+      <section class="view" id="view-me" hidden>
+        <div class="paper">
+          <h2 id="meTitle">내 사주 원국</h2>
+          <div class="pillars" id="pillars"></div>
+          <p class="muted small" id="meBirth"></p>
+        </div>
+        <div class="paper">
+          <h2>오행 분포</h2>
+          <div class="elements" id="elements"></div>
+          <p class="strength" id="meStrength"></p>
+        </div>
+        <div class="paper">
+          <h2>계산 방식</h2>
+          <ul class="notes">
+            <li>양력 생년월일 기준 만세력. 일주는 60갑자 순환, 년·월주는 절기(입춘·절입) 시각으로 계산해요.</li>
+            <li>시주는 한국 표준시와 실제 태양시의 차이를 감안해 30분 보정해요. (자시 23:30~01:30, 23:30 이후 출생은 다음 날 일주)</li>
+            <li>1948~1988년 일부 기간의 서머타임은 반영하지 않아요. 해당되면 태어난 시간에서 1시간을 빼서 입력해 주세요.</li>
+            <li>신강·신약은 오행 비중으로 본 간이 판정이에요.</li>
+          </ul>
+        </div>
+        <div class="actions row">
+          <button class="btn" id="editBtn" type="button">정보 수정</button>
+          <button class="btn ghost" id="resetBtn" type="button">모두 지우기</button>
+        </div>
+      </section>
+    </main>
+
+    <nav class="tabbar" id="tabbar" hidden>
+      <a href="#today" data-tab="today"><span class="ti">運</span>오늘</a>
+      <a href="#talisman" data-tab="talisman"><span class="ti">符</span>부적</a>
+      <a href="#match" data-tab="match"><span class="ti">筆</span>블록</a>
+      <a href="#me" data-tab="me"><span class="ti">命</span>내 사주</a>
+    </nav>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
