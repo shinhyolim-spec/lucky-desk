@@ -1,6 +1,6 @@
 import {
   computeSaju, STEMS, STEMS_HANJA, BRANCHES, BRANCHES_HANJA, ELEMENTS, ELEMENTS_HANJA, ZODIAC,
-  BRANCH_ELEMENT, BRANCH_MAIN_STEM, stemElement, tenGod, strengthOf, elementCounts,
+  BRANCH_ELEMENT, BRANCH_MAIN_STEM, stemElement, tenGod, strengthOf, elementCounts, addDays,
 } from './saju.js';
 import { dailyFortune, talismanLine, LUCK, hashStr, josa } from './fortune.js';
 import { ICONS, NAMES } from './icons.js';
@@ -20,6 +20,9 @@ const store = {
 let profile = store.get(KEY.profile);
 let saju = null;
 let fortune = null;
+let fortuneTomorrow = null;
+let tomorrowParts = null;
+let dayView = 0; // 0 오늘, 1 내일
 let todayKey = '';
 let scratch = null;
 let match = null;
@@ -67,6 +70,10 @@ function prepare() {
   if (profile.time) [hh, mm] = profile.time.split(':').map(Number);
   saju = computeSaju({ y, m, d, hh, mm });
   fortune = dailyFortune(saju, t, seedKey());
+  const [ty, tm, td] = addDays(t.y, t.m, t.d, 1);
+  tomorrowParts = { y: ty, m: tm, d: td, w: (t.w + 1) % 7 };
+  fortuneTomorrow = dailyFortune(saju, tomorrowParts, seedKey());
+  if (dateKey(t) !== todayKey) dayView = 0;
   todayKey = dateKey(t);
 }
 
@@ -105,11 +112,33 @@ function luckyIconFor(el) {
   return ICONS[map[el]];
 }
 
+// 내일 보기일 때 문구의 '오늘'을 '내일'로
+const dw = (str) => (dayView ? str.replace(/오늘/g, '내일') : str);
+
+function renderDaySwitch() {
+  const t = todayParts();
+  [[fortune, t, '오늘'], [fortuneTomorrow, tomorrowParts, '내일']].forEach(([f, p, word], i) => {
+    const btn = $(`dayBtn${i}`);
+    btn.innerHTML = `<small>${word} ${p.m}/${p.d} (${WEEK[p.w]})</small><b>${f.today.name}(${f.today.hanja})일</b>`;
+    btn.setAttribute('aria-selected', String(dayView === i));
+  });
+}
+document.querySelectorAll('.day-switch button').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const v = Number(btn.dataset.day);
+    if (v === dayView) return;
+    dayView = v;
+    renderToday();
+  });
+});
+
 function renderToday() {
-  const f = fortune;
+  renderDaySwitch();
+  const f = dayView ? fortuneTomorrow : fortune;
+  document.querySelectorAll('#view-today .dayword').forEach((e) => { e.textContent = dayView ? '내일' : '오늘'; });
   const name = profile.nick ? `${profile.nick}님` : '오늘도 출근한 당신';
-  $('greet').textContent = `${name}, 좋은 아침이에요`;
-  $('scoreTitle').textContent = `오늘은 ${f.score}점인 날`;
+  $('greet').textContent = dayView ? `${profile.nick ? name + ', ' : ''}내일 하루를 미리 살펴볼게요` : `${name}, 좋은 아침이에요`;
+  $('scoreTitle').textContent = `${dayView ? '내일' : '오늘'}은 ${f.score}점인 날`;
   $('scoreBand').textContent = `${f.band} · ${f.gist}`;
 
   // 점수 애니메이션
@@ -128,17 +157,17 @@ function renderToday() {
     $('gaugeFg').style.strokeDashoffset = C * (1 - target / 100);
   }));
 
-  const chips = [`<span class="chip">오늘 일진 <b>${f.today.hanja}</b> ${f.today.name}일</span>`,
+  const chips = [`<span class="chip">${dayView ? '내일' : '오늘'} 일진 <b>${f.today.hanja}</b> ${f.today.name}일</span>`,
     `<span class="chip">${f.stemGod.name} <b>${f.godHanja}</b></span>`];
   for (const r of f.relations) chips.push(`<span class="chip ${r.good ? 'good' : 'bad'}">${r.tag}</span>`);
   $('iljin').innerHTML = chips.join('');
 
-  $('headline').textContent = f.headline;
-  $('summary').textContent = f.summary;
+  $('headline').textContent = dw(f.headline);
+  $('summary').textContent = dw(f.summary);
   $('relations').innerHTML = f.relations
-    .map((r) => `<li class="${r.good ? 'good' : 'bad'}"><span class="tag">${r.tag}</span>${r.text}</li>`)
-    .join('') || '<li>오늘은 내 일지와 크게 부딪히거나 묶이는 관계가 없어, 흐름이 담백한 편이에요.</li>';
-  $('strengthLine').textContent = `${f.strengthLine} (내 일간: ${STEMS[saju.day.stem]}${f.elementName}, ${f.strength.label})`;
+    .map((r) => `<li class="${r.good ? 'good' : 'bad'}"><span class="tag">${r.tag}</span>${dw(r.text)}</li>`)
+      .join('') || dw('<li>오늘은 내 일지와 크게 부딪히거나 묶이는 관계가 없어, 흐름이 담백한 편이에요.</li>');
+  $('strengthLine').textContent = `${dw(f.strengthLine)} (내 일간: ${STEMS[saju.day.stem]}${f.elementName}, ${f.strength.label})`;
 
   $('subs').innerHTML = f.subs
     .map((s) => `<div class="sub"><span>${s.label}</span><div class="bar"><i style="width:0" data-w="${s.value}"></i></div><b>${s.value}</b></div>`)
@@ -159,7 +188,7 @@ function renderToday() {
   if (f.relations.some((r) => r.tag === '충')) tips.unshift('충이 든 날엔 구두로 한 약속도 메신저로 한 번 더 남겨 두세요.');
   if (f.relations.some((r) => r.tag === '육합' || r.tag === '천간합')) tips.unshift('합이 든 날이라 부탁이나 협조 요청이 잘 통해요.');
   tips.push(`행운의 색 ${L.color.name}: 펜, 메모지, 머그잔처럼 손 닿는 곳에 두면 충분해요.`);
-  $('tips').innerHTML = tips.slice(0, 4).map((t) => `<li>${t}</li>`).join('');
+  $('tips').innerHTML = tips.slice(0, 4).map((t) => `<li>${dw(t)}</li>`).join('');
 }
 
 $('shareBtn').addEventListener('click', async () => {

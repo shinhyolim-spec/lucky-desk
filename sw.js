@@ -1,5 +1,5 @@
 // 오프라인 캐시. 배포할 때 VERSION을 올리면 새 파일로 교체됨
-const VERSION = 'luckydesk-v1';
+const VERSION = 'luckydesk-v2';
 const SHELL = [
   './', './index.html', './css/style.css', './manifest.webmanifest',
   './js/app.js', './js/saju.js', './js/fortune.js', './js/icons.js', './js/scratch.js', './js/match3.js',

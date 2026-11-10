@@ -109,6 +109,20 @@ h2::before {
 .check input { width: 20px; height: 20px; accent-color: var(--seal); }
 .hint { font-size: .9rem; color: var(--ink-soft); margin: 0; }
 
+/* 오늘/내일 */
+.day-switch {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin-bottom: 12px;
+  background: rgba(59,42,29,.55); border-radius: 16px;
+}
+.day-switch button {
+  appearance: none; border: 0; border-radius: 12px; padding: 8px 6px; min-height: 52px; cursor: pointer;
+  background: transparent; color: #f3e4cc; display: grid; justify-items: center; line-height: 1.3;
+}
+.day-switch button small { font-size: .8rem; opacity: .85; }
+.day-switch button b { font-family: var(--serif); font-size: 1.05rem; }
+.day-switch button[aria-selected="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 2px 0 rgba(60,35,15,.15); }
+.day-switch button[aria-selected="true"] b { color: var(--seal); }
+
 /* 점수 */
 .score-card { text-align: center; padding-top: 22px; overflow: hidden; }
 .score-card::after {

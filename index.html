@@ -65,6 +65,10 @@
 
       <!-- 오늘의 운세 -->
       <section class="view" id="view-today" hidden>
+        <div class="day-switch" role="tablist" aria-label="날짜 선택">
+          <button type="button" role="tab" data-day="0" id="dayBtn0"></button>
+          <button type="button" role="tab" data-day="1" id="dayBtn1"></button>
+        </div>
         <div class="paper score-card">
           <p class="greet" id="greet"></p>
           <div class="score-wrap">
@@ -80,7 +84,7 @@
         </div>
 
         <div class="paper reading">
-          <h2>오늘의 해석</h2>
+          <h2><span><span class="dayword">오늘</span>의 해석</span></h2>
           <p class="headline" id="headline"></p>
           <p class="summary" id="summary"></p>
           <ul class="relations" id="relations"></ul>
@@ -93,7 +97,7 @@
         </div>
 
         <div class="paper">
-          <h2>오늘의 행운</h2>
+          <h2><span><span class="dayword">오늘</span>의 행운</span></h2>
           <div class="lucky" id="lucky"></div>
         </div>
 
