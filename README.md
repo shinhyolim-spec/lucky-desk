@@ -44,7 +44,7 @@ python3 -m http.server 8000
 2. Source: **Deploy from a branch**, Branch: 기본 브랜치 / `(root)` 선택 후 Save
 3. 1~2분 뒤 `https://shinhyolim-spec.github.io/lucky-desk/` 에서 열림
 
-파일을 수정해 다시 배포할 땐 `sw.js`의 `VERSION` 값을 올려 주세요. 그래야 이미 설치한 휴대폰에서도 새 버전으로 바뀌어요.
+파일을 수정해 다시 배포할 땐 버전 숫자를 함께 올려 주세요: `sw.js`의 `VERSION`, `index.html`과 각 `js/*.js` import의 `?v=` 값. 그래야 이미 열어 본 휴대폰에서 새 화면과 예전 코드가 섞이지 않아요.
 
 ## 홈 화면에 추가
 - 아이폰(Safari): 공유 버튼 → 홈 화면에 추가

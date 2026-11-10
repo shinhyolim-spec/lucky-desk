@@ -1,8 +1,10 @@
 // 오프라인 캐시. 배포할 때 VERSION을 올리면 새 파일로 교체됨
-const VERSION = 'luckydesk-v3';
+const VERSION = 'luckydesk-v4';
 const SHELL = [
-  './', './index.html', './css/style.css', './manifest.webmanifest',
-  './js/app.js', './js/saju.js', './js/fortune.js', './js/icons.js', './js/scratch.js', './js/match3.js',
+  './', './index.html', './manifest.webmanifest',
+  // index.html / 모듈 import와 같은 ?v= 값이어야 함
+  './css/style.css?v=4',
+  './js/app.js?v=4', './js/saju.js?v=4', './js/fortune.js?v=4', './js/icons.js?v=4', './js/scratch.js?v=4', './js/match3.js?v=4',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png',
 ];
 

@@ -1,5 +1,5 @@
 // 문구류 블록 3개 맞추기 (시간 제한 없음)
-import { ICONS } from './icons.js';
+import { ICONS } from './icons.js?v=4';
 
 const N = 8;
 const wait = (ms) => new Promise((res) => setTimeout(res, ms));

@@ -1,11 +1,11 @@
 import {
   computeSaju, STEMS, STEMS_HANJA, BRANCHES, BRANCHES_HANJA, ELEMENTS, ELEMENTS_HANJA, ZODIAC,
   BRANCH_ELEMENT, BRANCH_MAIN_STEM, stemElement, tenGod, strengthOf, elementCounts, addDays,
-} from './saju.js';
-import { dailyFortune, talismanLine, LUCK, hashStr, josa } from './fortune.js';
-import { ICONS, NAMES } from './icons.js';
-import { createScratch } from './scratch.js';
-import { createMatch3 } from './match3.js';
+} from './saju.js?v=4';
+import { dailyFortune, talismanLine, LUCK, hashStr, josa } from './fortune.js?v=4';
+import { ICONS, NAMES } from './icons.js?v=4';
+import { createScratch } from './scratch.js?v=4';
+import { createMatch3 } from './match3.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 const KEY = { profile: 'luckydesk.profile', talisman: 'luckydesk.talisman', match: 'luckydesk.match3' };
@@ -116,6 +116,7 @@ function luckyIconFor(el) {
 const dw = (str) => (dayView ? str.replace(/오늘/g, '내일') : str);
 
 function renderDaySwitch() {
+  $('daySwitch').hidden = false;
   const t = todayParts();
   [[fortune, t, '오늘'], [fortuneTomorrow, tomorrowParts, '내일']].forEach(([f, p, word], i) => {
     const btn = $(`dayBtn${i}`);

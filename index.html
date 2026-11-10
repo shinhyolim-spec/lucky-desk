@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
   <div class="desk">
@@ -65,7 +65,7 @@
 
       <!-- 오늘의 운세 -->
       <section class="view" id="view-today" hidden>
-        <div class="day-switch" role="tablist" aria-label="날짜 선택">
+        <div class="day-switch" id="daySwitch" hidden role="tablist" aria-label="날짜 선택">
           <button type="button" role="tab" data-day="0" id="dayBtn0"></button>
           <button type="button" role="tab" data-day="1" id="dayBtn1"></button>
         </div>
@@ -187,6 +187,6 @@
     </nav>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/app.js?v=4"></script>
 </body>
 </html>
