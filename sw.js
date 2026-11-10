@@ -1,5 +1,5 @@
 // 오프라인 캐시. 배포할 때 VERSION을 올리면 새 파일로 교체됨
-const VERSION = 'luckydesk-v2';
+const VERSION = 'luckydesk-v3';
 const SHELL = [
   './', './index.html', './css/style.css', './manifest.webmanifest',
   './js/app.js', './js/saju.js', './js/fortune.js', './js/icons.js', './js/scratch.js', './js/match3.js',
@@ -28,7 +28,8 @@ self.addEventListener('fetch', (e) => {
   // 페이지·스크립트는 네트워크 우선(업데이트 반영), 실패하면 캐시
   if (url.origin === location.origin) {
     e.respondWith(
-      fetch(req)
+      // cache: 'no-cache' → 브라우저 HTTP 캐시(GitHub Pages 10분)를 건너뛰고 서버에 새 버전 확인
+      fetch(req, { cache: 'no-cache' })
         .then((res) => {
           if (res.ok) {
             const copy = res.clone();
