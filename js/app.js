@@ -1,11 +1,11 @@
 import {
   computeSaju, STEMS, STEMS_HANJA, BRANCHES, BRANCHES_HANJA, ELEMENTS, ELEMENTS_HANJA, ZODIAC,
   BRANCH_ELEMENT, BRANCH_MAIN_STEM, stemElement, tenGod, strengthOf, elementCounts, addDays,
-} from './saju.js?v=4';
-import { dailyFortune, talismanLine, LUCK, hashStr, josa } from './fortune.js?v=4';
-import { ICONS, NAMES } from './icons.js?v=4';
-import { createScratch } from './scratch.js?v=4';
-import { createMatch3 } from './match3.js?v=4';
+} from './saju.js?v=5';
+import { dailyFortune, talismanLine, LUCK, hashStr, josa } from './fortune.js?v=5';
+import { ICONS, NAMES } from './icons.js?v=5';
+import { createScratch } from './scratch.js?v=5';
+import { createMatch3 } from './match3.js?v=5';
 
 const $ = (id) => document.getElementById(id);
 const KEY = { profile: 'luckydesk.profile', talisman: 'luckydesk.talisman', match: 'luckydesk.match3' };
@@ -47,6 +47,7 @@ const VIEWS = ['setup', 'today', 'talisman', 'match', 'me'];
 function show(name) {
   if (!profile) name = 'setup';
   if (!VIEWS.includes(name)) name = 'today';
+  if (name !== 'match') match?.pause();
   for (const v of VIEWS) $(`view-${v}`).hidden = v !== name;
   $('tabbar').hidden = !profile;
   document.querySelectorAll('.tabbar a').forEach((a) => a.classList.toggle('on', a.dataset.tab === name));
@@ -100,6 +101,7 @@ $('setupForm').addEventListener('submit', (e) => {
   if (!f.noTime.checked && !time) { toast('태어난 시간을 입력하거나 “몰라요”를 체크해 주세요'); return; }
   profile = { nick: f.nick.value.trim(), birth, time };
   store.set(KEY.profile, profile);
+  match?.destroy();
   match = null;
   prepare();
   location.hash = '#today';
@@ -255,24 +257,35 @@ function renderMatch() {
   const L = fortune.lucky;
   const types = blockTypes();
   const lucky = types[L.element];
-  $('m3Guide').innerHTML = `오늘의 행운 블록은 <b>${lucky.label}</b>! 맞추면 블록마다 <b>+15</b> 보너스`;
-  if (match && match.day === todayKey) return;
+  $('m3Guide').innerHTML = `행운 블록 <b>${lucky.label}</b> · 블록당 +15`;
+  if (match && match.day === todayKey) { match.resume(); return; }
+  $('boardResult').hidden = true;
+  match?.destroy();
   const toastEl = $('boardToast');
   match = createMatch3($('board'), {
     types,
     luckyIndex: L.element,
     storage: {
-      load() {
-        const s = store.get(KEY.match) || { best: 0 };
-        if (s.date !== todayKey) return { date: todayKey, score: 0, lucky: 0, best: s.best || 0 };
-        return s;
-      },
+      load() { return { best: store.get(KEY.match)?.best || 0 }; },
       save(s) { store.set(KEY.match, s); },
     },
     onChange(s) {
       $('m3Score').textContent = s.score.toLocaleString();
       $('m3Best').textContent = s.best.toLocaleString();
       $('m3Lucky').textContent = s.lucky;
+    },
+    onTime(ms) {
+      const sec = Math.ceil(ms / 1000);
+      $('m3Time').textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+      $('m3Time').parentElement.classList.toggle('warn', sec <= 10 && sec > 0);
+    },
+    onEnd(r) {
+      $('resScore').textContent = r.score.toLocaleString();
+      $('resDetail').innerHTML = r.newBest
+        ? `행운 블록 ${r.lucky}개 · <b>최고 기록 경신!</b>`
+        : `행운 블록 ${r.lucky}개 · 최고 ${r.best.toLocaleString()}점`;
+      $('boardResult').hidden = false;
+      navigator.vibrate?.(60);
     },
     toast(msg) {
       toastEl.textContent = msg;
@@ -284,7 +297,9 @@ function renderMatch() {
   match.day = todayKey;
 }
 $('m3Hint').addEventListener('click', () => match?.hint());
-$('m3New').addEventListener('click', () => match?.restart());
+const newRound = () => { $('boardResult').hidden = true; match?.restart(); };
+$('m3New').addEventListener('click', newRound);
+$('resAgain').addEventListener('click', newRound);
 
 // ── 내 사주 ──
 function renderMe() {
@@ -316,6 +331,7 @@ $('resetBtn').addEventListener('click', () => {
   if (!confirm('저장된 생년월일과 게임 기록을 모두 지울까요?')) return;
   Object.values(KEY).forEach(store.del);
   profile = null;
+  match?.destroy();
   match = null;
   location.hash = '';
   prepare();
@@ -324,7 +340,9 @@ $('resetBtn').addEventListener('click', () => {
 
 // 자정이 지나 다시 열면 새 운세로
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState !== 'visible' || !profile) return;
+  if (document.visibilityState !== 'visible') { match?.pause(); return; }
+  if (!profile) return;
+  if (!$('view-match').hidden) match?.resume();
   if (dateKey(todayParts()) !== todayKey) { prepare(); route(); }
 });
 

@@ -1,7 +1,7 @@
 import {
   STEMS, STEMS_HANJA, BRANCHES, BRANCHES_HANJA, ELEMENTS, ELEMENTS_HANJA,
   BRANCH_MAIN_STEM, stemElement, dayPillar, tenGod, stemRelation, branchRelations, strengthOf,
-} from './saju.js?v=4';
+} from './saju.js?v=5';
 
 // ── 결정적 난수 (같은 날 같은 사람은 같은 결과) ──
 export function hashStr(str) {

@@ -212,12 +212,16 @@ h2::before {
 .talisman-cover.gone { opacity: 0; pointer-events: none; }
 
 /* 블록 맞추기 */
-.match-head { padding: 14px 16px; }
-.match-stats { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; }
+.match-head { padding: 10px 12px; margin-bottom: 10px; }
+.match-stats { display: grid; grid-template-columns: 1.15fr 1fr 1fr 1fr; text-align: center; }
+.m3-time b { color: var(--seal); font-variant-numeric: tabular-nums; }
+.m3-time.warn b { animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .35; } }
 .match-stats small { display: block; color: var(--ink-soft); font-size: .82rem; }
-.match-stats b { font-family: var(--serif); font-size: 1.45rem; }
-.match-head p { margin: 6px 0 0; text-align: center; }
-.board-wrap { position: relative; margin: 0 auto 12px; width: min(100%, 440px); }
+.match-stats b { font-family: var(--serif); font-size: 1.3rem; line-height: 1.3; }
+.match-head p { margin: 4px 0 0; text-align: center; line-height: 1.4; }
+/* 판 전체와 타이머가 한 화면에 보이도록 화면 높이에 맞춰 크기 조절 */
+.board-wrap { position: relative; margin: 0 auto 12px; width: min(100%, 440px, calc(100vh - 270px - env(safe-area-inset-top) - env(safe-area-inset-bottom))); width: min(100%, 440px, calc(100dvh - 270px - env(safe-area-inset-top) - env(safe-area-inset-bottom))); min-width: 260px; }
 .board {
   position: relative; width: 100%; aspect-ratio: 1; border-radius: 16px; overflow: hidden;
   background:
@@ -252,6 +256,25 @@ h2::before {
   font-weight: 700; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; white-space: nowrap;
 }
 .board-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+/* 결과 */
+.board-result {
+  position: absolute; inset: 0; display: grid; place-items: center; border-radius: 16px;
+  background: rgba(59,42,29,.55); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  animation: rise .3s ease;
+}
+.result-card {
+  background: var(--paper); border-radius: var(--radius); padding: 20px 26px; text-align: center;
+  box-shadow: var(--shadow); min-width: 64%; display: grid; gap: 4px; justify-items: center;
+}
+.result-card p { margin: 0; }
+.result-stamp {
+  width: 46px; height: 46px; display: grid; place-items: center; border: 2.5px solid var(--seal); color: var(--seal);
+  border-radius: 8px; font-family: var(--serif); font-weight: 700; font-size: 1.3rem; transform: rotate(-8deg); margin-bottom: 4px;
+}
+.result-title { font-family: var(--serif); font-weight: 700; font-size: 1.2rem; }
+.result-score b { font-family: var(--serif); font-size: 2.6rem; color: var(--seal); line-height: 1.2; }
+.result-card .btn { margin-top: 10px; }
 
 /* 탭바 */
 .tabbar {

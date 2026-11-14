@@ -1,15 +1,46 @@
 // 문구류 블록 3개 맞추기 (시간 제한 없음)
-import { ICONS } from './icons.js?v=4';
+import { ICONS } from './icons.js?v=5';
 
 const N = 8;
+export const ROUND_MS = 3 * 60 * 1000; // 한 판 3분
 const wait = (ms) => new Promise((res) => setTimeout(res, ms));
 
-export function createMatch3(board, { types, luckyIndex, storage, onChange, toast }) {
+export function createMatch3(board, { types, luckyIndex, storage, onChange, toast, onTime, onEnd }) {
   let grid = []; // grid[r][c] = { t, el }
   let busy = false;
   let selected = null;
-  let state = storage.load();
+  let state = { score: 0, lucky: 0, best: storage.load().best || 0 };
   let hintTimer = null;
+
+  // ── 타이머: 첫 이동에 시작, 화면을 떠나면 일시정지 ──
+  let remaining = ROUND_MS;
+  let started = false, paused = false, timeUp = false, ended = false;
+  let ticker = null, lastTick = 0;
+  function tick() {
+    const now = performance.now();
+    remaining = Math.max(0, remaining - (now - lastTick));
+    lastTick = now;
+    onTime?.(remaining, { started, paused });
+    if (remaining <= 0) {
+      stopTicker();
+      timeUp = true;
+      if (!busy) finish();
+    }
+  }
+  function startTicker() {
+    stopTicker();
+    lastTick = performance.now();
+    ticker = setInterval(tick, 200);
+  }
+  function stopTicker() { clearInterval(ticker); ticker = null; }
+  function finish() {
+    if (ended) return;
+    ended = true;
+    clearSel();
+    clearHint();
+    const newBest = state.score > 0 && state.score >= state.best;
+    onEnd?.({ score: state.score, lucky: state.lucky, best: state.best, newBest });
+  }
 
   const isLucky = (t) => t === luckyIndex;
 
@@ -111,7 +142,7 @@ export function createMatch3(board, { types, luckyIndex, storage, onChange, toas
     state.score += n;
     state.lucky += luckyCount;
     if (state.score > state.best) state.best = state.score;
-    storage.save(state);
+    storage.save({ best: state.best });
     onChange(state);
   }
 
@@ -189,7 +220,8 @@ export function createMatch3(board, { types, luckyIndex, storage, onChange, toas
   }
 
   async function swap(a, b) {
-    if (busy) return;
+    if (busy || timeUp || ended) return;
+    if (!started) { started = true; startTicker(); }
     busy = true;
     clearSel();
     clearHint();
@@ -209,6 +241,7 @@ export function createMatch3(board, { types, luckyIndex, storage, onChange, toas
       await resolve();
     }
     busy = false;
+    if (timeUp) finish(); // 시간이 끝나는 순간 진행 중이던 연쇄는 점수에 포함
   }
 
   function clearSel() {
@@ -229,7 +262,7 @@ export function createMatch3(board, { types, luckyIndex, storage, onChange, toas
     return r >= 0 && r < N && c >= 0 && c < N ? [r, c] : null;
   };
   board.addEventListener('pointerdown', (e) => {
-    if (busy) return;
+    if (busy || timeUp || ended) return;
     const cell = cellFrom(e);
     if (!cell) return;
     start = { cell, x: e.clientX, y: e.clientY, moved: false };
@@ -265,10 +298,23 @@ export function createMatch3(board, { types, luckyIndex, storage, onChange, toas
 
   build();
   onChange(state);
+  onTime?.(remaining, { started, paused });
 
   return {
+    destroy() { stopTicker(); },
+    pause() {
+      if (!started || paused || ended || timeUp) return;
+      tick();
+      stopTicker();
+      paused = true;
+    },
+    resume() {
+      if (!paused) return;
+      paused = false;
+      startTicker();
+    },
     hint() {
-      if (busy) return;
+      if (busy || ended || timeUp) return;
       clearHint();
       const m = findMove();
       if (!m) return;
@@ -277,10 +323,14 @@ export function createMatch3(board, { types, luckyIndex, storage, onChange, toas
     },
     restart() {
       if (busy) return;
+      stopTicker();
+      remaining = ROUND_MS;
+      started = paused = timeUp = ended = false;
       state = { ...state, score: 0, lucky: 0 };
-      storage.save(state);
       onChange(state);
+      onTime?.(remaining, { started, paused });
       clearSel();
+      clearHint();
       build();
     },
   };
